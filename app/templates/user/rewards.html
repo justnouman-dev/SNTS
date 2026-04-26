@@ -1,0 +1,130 @@
+{% extends 'shared/base.html' %}
+{% block title %}Rewards{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Rewards</h1>
+      <p class="page-subtitle">Earn points by logging food and unlock badges</p>
+    </div>
+    <a href="{{ url_for('user.food_log') }}" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-plus fa-xs"></i> Log Food
+    </a>
+  </div>
+
+  <!-- Points banner -->
+  <div class="pts-banner">
+    <div>
+      <div class="pts-banner-main">{{ stats.points }} pts</div>
+      <div class="pts-banner-sub">Your total points balance</div>
+    </div>
+    <div class="pts-banner-stats">
+      <div class="pts-banner-stat">
+        <div class="pts-banner-stat-val">{{ stats.streak }}</div>
+        <div class="pts-banner-stat-key">Day Streak</div>
+      </div>
+      <div class="pts-banner-stat">
+        <div class="pts-banner-stat-val">
+          {% if stats.last_log_date %}
+            {{ stats.last_log_date.strftime('%d %b') }}
+          {% else %}
+            —
+          {% endif %}
+        </div>
+        <div class="pts-banner-stat-key">Last Log</div>
+      </div>
+      <div class="pts-banner-stat">
+        <div class="pts-banner-stat-val">+10</div>
+        <div class="pts-banner-stat-key">Per Log</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rewards grid -->
+  {% if rewards %}
+  <div class="rewards-grid">
+    {% for reward in rewards %}
+    {% set unlocked = stats.points >= reward.points_required %}
+    <div class="reward-card {% if unlocked %}unlocked{% else %}locked{% endif %}">
+
+      <div class="reward-icon">
+        {% if unlocked %}
+          <i class="fa-solid fa-trophy" style="color:#f59e0b"></i>
+        {% else %}
+          <i class="fa-solid fa-lock" style="color:var(--gray-300)"></i>
+        {% endif %}
+      </div>
+
+      <div class="reward-name">{{ reward.name }}</div>
+      <div class="reward-pts">
+        <i class="fa-solid fa-star fa-xs" style="color:#f59e0b"></i>
+        {{ reward.points_required }} points required
+      </div>
+
+      <!-- Progress bar -->
+      <div class="reward-progress-wrap">
+        {% set pct = [[(stats.points / reward.points_required * 100)|round|int, 100]|min, 0]|max %}
+        <div style="height:6px;background:var(--gray-100);border-radius:99px;overflow:hidden;margin-bottom:.35rem">
+          <div style="height:100%;width:{{ pct }}%;background:{% if unlocked %}var(--green){% else %}var(--gray-300){% endif %};border-radius:99px;transition:width .5s"></div>
+        </div>
+        <div style="font-size:.74rem;color:var(--gray-400)">
+          {% if unlocked %}
+            Unlocked!
+          {% else %}
+            {{ stats.points }} / {{ reward.points_required }}
+          {% endif %}
+        </div>
+      </div>
+
+      {% if unlocked %}
+      <form method="POST" action="{{ url_for('user.redeem_reward', reward_id=reward.id) }}">
+        <button type="submit" class="btn btn-primary btn-sm btn-fw">
+          <i class="fa-solid fa-gift fa-xs"></i> Redeem
+        </button>
+      </form>
+      {% else %}
+      <div style="padding:.4rem 0;font-size:.8rem;color:var(--gray-400)">
+        Need {{ reward.points_required - stats.points }} more points
+      </div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fa-solid fa-trophy"></i></div>
+      <p>No rewards available yet. Check back later!</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- How to earn -->
+  <div class="card" style="margin-top:.5rem">
+    <div class="card-header">
+      <h3><i class="fa-solid fa-circle-info"></i> How to Earn Points</h3>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:.65rem">
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <span class="badge badge-success">+10 pts</span>
+          <span style="font-size:.88rem;color:var(--gray-700)">Log any food entry (search or manual)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <span class="badge badge-info">Streak</span>
+          <span style="font-size:.88rem;color:var(--gray-700)">Log every day to maintain your streak</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <span class="badge badge-warning">Unlock</span>
+          <span style="font-size:.88rem;color:var(--gray-700)">Reach a points threshold to unlock and redeem a reward</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
