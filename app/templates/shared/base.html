@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SNTS{% endblock %} — Smart Nutrient Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%2316a34a'/><text y='.9em' font-size='62' x='10' fill='white' font-family='system-ui' font-weight='700'>S</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  {% if current_user.is_authenticated %}
+  <nav class="navbar">
+    <a class="nav-brand" href="{% if current_user.role == 'admin' %}{{ url_for('admin.dashboard') }}{% else %}{{ url_for('user.dashboard') }}{% endif %}">SNTS</a>
+
+    <div class="nav-links" id="navLinks">
+      {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('admin.users') }}"     class="{% if request.endpoint in ['admin.users'] %}active{% endif %}">Users</a>
+        <a href="{{ url_for('admin.foods') }}"     class="{% if request.endpoint in ['admin.foods','admin.add_food','admin.edit_food'] %}active{% endif %}">Foods</a>
+        <a href="{{ url_for('admin.rewards') }}"   class="{% if request.endpoint in ['admin.rewards','admin.add_reward','admin.edit_reward'] %}active{% endif %}">Rewards</a>
+        <a href="{{ url_for('admin.import_foods') }}"  class="{% if request.endpoint == 'admin.import_foods' %}active{% endif %}">Import</a>
+        <a href="{{ url_for('admin.exports') }}"   class="{% if request.endpoint in ['admin.exports'] %}active{% endif %}">Exports</a>
+      {% else %}
+        <a href="{{ url_for('user.dashboard') }}" class="{% if request.endpoint == 'user.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('user.food_log') }}"  class="{% if request.endpoint == 'user.food_log' %}active{% endif %}">Log Food</a>
+        <a href="{{ url_for('user.history') }}"   class="{% if request.endpoint == 'user.history' %}active{% endif %}">History</a>
+        <a href="{{ url_for('user.rewards') }}"   class="{% if request.endpoint == 'user.rewards' %}active{% endif %}">Rewards</a>
+        <a href="{{ url_for('user.profile') }}"   class="{% if request.endpoint == 'user.profile' %}active{% endif %}">Profile</a>
+      {% endif %}
+    </div>
+
+    <div class="nav-right">
+      <span class="nav-username {% if current_user.role == 'admin' %}is-admin{% endif %}">
+        {{ current_user.username }}{% if current_user.role == 'admin' %} &middot; Admin{% endif %}
+      </span>
+      <a href="{{ url_for('auth.logout') }}" class="btn-logout">
+        <i class="fa-solid fa-arrow-right-from-bracket fa-sm"></i> Logout
+      </a>
+    </div>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </nav>
+  {% endif %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+      {% for cat, msg in messages %}
+      <div class="flash flash-{{ cat }}">
+        <i class="fa-solid fa-sm {% if cat=='success' %}fa-circle-check{% elif cat=='danger' %}fa-circle-xmark{% elif cat=='warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+        <span>{{ msg }}</span>
+        <button class="flash-close" onclick="this.parentElement.remove()">&#x2715;</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <main class="{% if current_user.is_authenticated %}with-nav{% endif %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

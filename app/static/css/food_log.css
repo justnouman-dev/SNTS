@@ -1,0 +1,123 @@
+/* ============================================================
+   SNTS — Food Log page extra styles
+   ============================================================ */
+
+/* ── Tab nav ──────────────────────────────────────────────── */
+.fl-tabs {
+  display: flex; gap: .35rem; background: var(--gray-100);
+  padding: .35rem; border-radius: var(--radius); margin-bottom: 1.25rem;
+}
+
+.fl-tab {
+  flex: 1; padding: .5rem 1rem; border: none; border-radius: var(--radius-sm);
+  background: transparent; color: var(--gray-600);
+  font-size: .875rem; font-weight: 600; cursor: pointer; transition: all .15s;
+}
+.fl-tab.active { background: var(--surface); color: var(--green); box-shadow: var(--shadow-sm); }
+.fl-tab:hover:not(.active) { background: var(--gray-200); }
+
+.fl-pane { display: none; }
+.fl-pane.active { display: block; }
+
+/* ── Search section ───────────────────────────────────────── */
+.fl-search-wrap { position: relative; margin-bottom: 1rem; }
+
+.fl-search-input {
+  width: 100%; padding: .6rem 2.5rem .6rem .9rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: .9rem; color: var(--gray-800);
+  background: var(--surface); outline: none; transition: border-color .15s;
+}
+.fl-search-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
+
+.fl-clear-btn {
+  position: absolute; right: .65rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--gray-400); cursor: pointer;
+  font-size: .9rem; display: none;
+}
+.fl-clear-btn:hover { color: var(--gray-700); }
+
+/* ── Dropdown results ─────────────────────────────────────── */
+.fl-dropdown {
+  position: absolute; left: 0; top: 100%; right: 0; z-index: 200;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
+  max-height: 240px; overflow-y: auto; display: none;
+}
+.fl-dropdown.open { display: block; }
+
+.fl-result {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .65rem 1rem; cursor: pointer; transition: background .12s;
+  border-bottom: 1px solid var(--border);
+}
+.fl-result:last-child { border-bottom: none; }
+.fl-result:hover { background: var(--gray-50); }
+
+.fl-result-name { flex: 1; font-size: .88rem; font-weight: 600; color: var(--gray-800); }
+
+.fl-result-macros { display: flex; gap: .4rem; font-size: .74rem; font-weight: 700; flex-shrink: 0; }
+.fl-m-cal  { color: var(--cal-color); }
+.fl-m-pro  { color: var(--pro-color); }
+.fl-m-carb { color: var(--carb-color); }
+.fl-m-fat  { color: var(--fat-color); }
+
+/* ── Selected food panel ──────────────────────────────────── */
+.fl-selected {
+  background: var(--gray-50); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem; margin-top: 1rem; display: none;
+}
+.fl-selected.visible { display: block; }
+
+.fl-selected-name { font-size: 1rem; font-weight: 700; color: var(--gray-800); margin-bottom: .6rem; }
+
+.fl-nutrient-preview {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: .5rem; margin-bottom: .9rem;
+}
+.fl-nutrient {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: .5rem; text-align: center;
+}
+.fl-nutrient-val { font-size: 1rem; font-weight: 700; }
+.fl-nutrient-key { font-size: .72rem; color: var(--gray-500); margin-top: .1rem; }
+
+.fl-qty-row { display: flex; align-items: center; gap: .65rem; margin-bottom: .75rem; flex-wrap: wrap; }
+
+.fl-qty-ctrl { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.fl-qty-ctrl button { width: 34px; height: 34px; border: none; background: var(--gray-100); color: var(--gray-700); font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .12s; }
+.fl-qty-ctrl button:hover { background: var(--gray-200); }
+.fl-qty-ctrl input { width: 68px; height: 34px; border: none; border-left: 1.5px solid var(--border); border-right: 1.5px solid var(--border); text-align: center; font-size: .9rem; font-weight: 600; outline: none; color: var(--gray-800); }
+
+.fl-quick-amounts { display: flex; gap: .4rem; flex-wrap: wrap; }
+.fl-quick-btn {
+  padding: .25rem .65rem; border: 1.5px solid var(--border);
+  border-radius: 99px; background: var(--surface); cursor: pointer;
+  font-size: .78rem; font-weight: 600; color: var(--gray-600); transition: all .12s;
+}
+.fl-quick-btn:hover { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+
+/* ── Browse table ─────────────────────────────────────────── */
+.btn-select {
+  padding: .25rem .7rem; border-radius: var(--radius-sm); border: 1.5px solid var(--green);
+  background: transparent; color: var(--green); font-size: .78rem; font-weight: 600;
+  cursor: pointer; transition: all .12s;
+}
+.btn-select:hover { background: var(--green); color: #fff; }
+
+/* ── Manual entry form ────────────────────────────────────── */
+.fl-manual-form { display: flex; flex-direction: column; gap: .85rem; }
+
+/* ── Today's log section ──────────────────────────────────── */
+.fl-log-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; flex-wrap: wrap; gap: .5rem;
+}
+.fl-log-header h3 { font-size: 1rem; font-weight: 700; color: var(--gray-800); }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .fl-tabs { flex-direction: column; }
+  .fl-nutrient-preview { grid-template-columns: repeat(2, 1fr); }
+  .fl-qty-row { flex-direction: column; align-items: flex-start; }
+}

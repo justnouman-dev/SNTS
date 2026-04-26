@@ -1,0 +1,138 @@
+{% extends 'shared/base.html' %}
+{% block title %}{{ 'Edit Food' if food else 'Add Food' }}{% endblock %}
+
+{% block content %}
+<div class="page-wrap" style="max-width:700px">
+
+  <div class="page-header">
+    <div class="page-header-back">
+      <a href="{{ url_for('admin.foods') }}" class="btn btn-ghost btn-sm">
+        <i class="fa-solid fa-arrow-left fa-xs"></i> Back to Foods
+      </a>
+      <div>
+        <h1 class="page-title">{{ 'Edit Food' if food else 'Add New Food' }}</h1>
+        <p class="page-subtitle">Values are per 100g</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>
+        <i class="fa-solid fa-{{ 'pen' if food else 'circle-plus' }}"></i>
+        {{ 'Edit: ' + food.name if food else 'New Food Entry' }}
+      </h3>
+    </div>
+    <div class="card-body">
+      <form method="POST"
+            action="{{ url_for('admin.edit_food', food_id=food.id) if food else url_for('admin.add_food') }}">
+
+        <div class="form-group">
+          <label class="form-label">Food Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" name="name" class="form-control" required
+                 placeholder="e.g. Dal Makhani"
+                 value="{{ food.name if food else '' }}" maxlength="120">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Calories (kcal) <span style="color:var(--danger)">*</span></label>
+            <input type="number" name="calories" id="inpCal" class="form-control" required
+                   min="0" step="0.1" placeholder="e.g. 155"
+                   value="{{ food.calories_per_100g if food else '' }}" oninput="livePreview()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Protein (g)</label>
+            <input type="number" name="protein" id="inpPro" class="form-control"
+                   min="0" step="0.1" placeholder="e.g. 8.5"
+                   value="{{ food.protein_per_100g if food else '' }}" oninput="livePreview()">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Carbohydrates (g)</label>
+            <input type="number" name="carbs" id="inpCarb" class="form-control"
+                   min="0" step="0.1" placeholder="e.g. 22.0"
+                   value="{{ food.carbs_per_100g if food else '' }}" oninput="livePreview()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fats (g)</label>
+            <input type="number" name="fats" id="inpFat" class="form-control"
+                   min="0" step="0.1" placeholder="e.g. 3.5"
+                   value="{{ food.fats_per_100g if food else '' }}" oninput="livePreview()">
+          </div>
+        </div>
+
+        <!-- Live macro preview -->
+        <div style="background:var(--gray-50);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;margin-bottom:1.25rem">
+          <div style="font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">
+            Live Macro Preview (per 100g)
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.55rem" id="previewBars">
+            <div>
+              <div class="progress-label">
+                <span>Calories</span><span id="pLblCal" class="val-cal">—</span>
+              </div>
+              <div class="progress"><div id="pBarCal" class="progress-bar pb-cal" style="width:0%"></div></div>
+            </div>
+            <div>
+              <div class="progress-label">
+                <span>Protein</span><span id="pLblPro" class="val-pro">—</span>
+              </div>
+              <div class="progress"><div id="pBarPro" class="progress-bar pb-pro" style="width:0%"></div></div>
+            </div>
+            <div>
+              <div class="progress-label">
+                <span>Carbs</span><span id="pLblCarb" class="val-carb">—</span>
+              </div>
+              <div class="progress"><div id="pBarCarb" class="progress-bar pb-carb" style="width:0%"></div></div>
+            </div>
+            <div>
+              <div class="progress-label">
+                <span>Fats</span><span id="pLblFat" class="val-fat">—</span>
+              </div>
+              <div class="progress"><div id="pBarFat" class="progress-bar pb-fat" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:.65rem;flex-wrap:wrap">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk fa-xs"></i>
+            {{ 'Update Food' if food else 'Add Food' }}
+          </button>
+          <a href="{{ url_for('admin.foods') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function livePreview() {
+  const cal  = parseFloat(document.getElementById('inpCal').value)  || 0;
+  const pro  = parseFloat(document.getElementById('inpPro').value)  || 0;
+  const carb = parseFloat(document.getElementById('inpCarb').value) || 0;
+  const fat  = parseFloat(document.getElementById('inpFat').value)  || 0;
+
+  const calMax = 900;
+  const macMax = 100;
+
+  function setBar(lblId, barId, val, max, unit) {
+    document.getElementById(lblId).textContent = val ? `${val}${unit}` : '—';
+    document.getElementById(barId).style.width  = val ? `${Math.min(100, val/max*100).toFixed(1)}%` : '0%';
+  }
+
+  setBar('pLblCal',  'pBarCal',  cal,  calMax, ' kcal');
+  setBar('pLblPro',  'pBarPro',  pro,  macMax, 'g');
+  setBar('pLblCarb', 'pBarCarb', carb, macMax, 'g');
+  setBar('pLblFat',  'pBarFat',  fat,  macMax, 'g');
+}
+
+// Run on load to populate preview if editing
+window.addEventListener('DOMContentLoaded', livePreview);
+</script>
+{% endblock %}

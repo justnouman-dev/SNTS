@@ -1,0 +1,117 @@
+{% extends 'shared/base.html' %}
+{% block title %}Manage Rewards{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div class="page-header-back">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost btn-sm">
+        <i class="fa-solid fa-arrow-left fa-xs"></i> Dashboard
+      </a>
+      <div>
+        <h1 class="page-title">Rewards Management</h1>
+        <p class="page-subtitle">Create and manage user rewards</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <a href="{{ url_for('admin.export_rewards') }}" class="btn btn-ghost btn-sm">
+        <i class="fa-solid fa-download fa-xs"></i> Export CSV
+      </a>
+      <a href="{{ url_for('admin.add_reward') }}" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-plus fa-xs"></i> Add Reward
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fa-solid fa-trophy"></i> All Rewards</h3>
+      <span style="font-size:.82rem;color:var(--gray-400)">{{ rewards | length }} total</span>
+    </div>
+
+    {% if rewards %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Reward Name</th>
+            <th>Points Required</th>
+            <th>File</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rewards %}
+          <tr>
+            <td style="color:var(--gray-400)">{{ r.id }}</td>
+            <td>
+              <span style="font-weight:600">
+                <i class="fa-solid fa-trophy fa-xs" style="color:#f59e0b;margin-right:.35rem"></i>
+                {{ r.name }}
+              </span>
+            </td>
+            <td>
+              <i class="fa-solid fa-star fa-xs" style="color:#f59e0b"></i>
+              <strong>{{ r.points_required }}</strong>
+              <span style="font-size:.78rem;color:var(--gray-400)">pts</span>
+            </td>
+            <td>
+              {% if r.has_file %}
+                <span class="reward-file-ext-badge ext-{{ r.file_ext|lower }}" title="{{ r.file_name }}">
+                  {{ r.file_ext }}
+                </span>
+              {% else %}
+                <span style="color:var(--gray-300);font-size:.8rem">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if r.is_active %}
+                <span class="badge badge-success">
+                  <span class="status-dot status-active"></span> Active
+                </span>
+              {% else %}
+                <span class="badge badge-neutral">
+                  <span class="status-dot status-inactive"></span> Inactive
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                <a href="{{ url_for('admin.edit_reward', reward_id=r.id) }}" class="btn btn-secondary btn-xs">
+                  <i class="fa-solid fa-pen fa-xs"></i> Edit
+                </a>
+                <form method="POST" action="{{ url_for('admin.toggle_reward', reward_id=r.id) }}">
+                  <button type="submit" class="btn btn-ghost btn-xs" title="{{ 'Disable' if r.is_active else 'Enable' }}">
+                    <i class="fa-solid fa-{% if r.is_active %}eye-slash{% else %}eye{% endif %} fa-xs"></i>
+                    {{ 'Disable' if r.is_active else 'Enable' }}
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.delete_reward', reward_id=r.id) }}"
+                      onsubmit="return confirm('Delete reward {{ r.name }}?')">
+                  <button type="submit" class="btn btn-danger btn-xs">
+                    <i class="fa-solid fa-trash fa-xs"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fa-solid fa-trophy"></i></div>
+      <p>No rewards created yet.</p>
+      <a href="{{ url_for('admin.add_reward') }}" class="btn btn-primary btn-sm" style="margin-top:.75rem">
+        Create First Reward
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

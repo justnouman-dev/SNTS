@@ -1,0 +1,263 @@
+{% extends 'shared/base.html' %}
+{% block title %}Log Food{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/food_log.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div class="page-header-back">
+      <a href="{{ url_for('user.dashboard') }}" class="btn btn-ghost btn-sm">
+        <i class="fa-solid fa-arrow-left fa-xs"></i> Dashboard
+      </a>
+      <div>
+        <h1 class="page-title">Log Food</h1>
+        <p class="page-subtitle">Search the database or enter nutrition manually</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-grid" style="grid-template-columns:1fr 340px">
+
+    <!-- LEFT: Search + Manual tabs -->
+    <div>
+      <div class="card">
+        <div class="card-body">
+
+          <!-- Tabs -->
+          <div class="fl-tabs">
+            <button class="fl-tab active" data-target="paneSearch">
+              <i class="fa-solid fa-magnifying-glass fa-xs"></i> Search Food
+            </button>
+            <button class="fl-tab" data-target="paneManual">
+              <i class="fa-solid fa-pencil fa-xs"></i> Manual Entry
+            </button>
+            <button class="fl-tab" data-target="paneBrowse">
+              <i class="fa-solid fa-list fa-xs"></i> Browse All
+            </button>
+          </div>
+
+          <!-- ── Search pane ─────────────────────────────────── -->
+          <div id="paneSearch" class="fl-pane active">
+
+            <div class="fl-search-wrap">
+              <input type="text" id="searchInput" class="fl-search-input"
+                     placeholder="Type food name e.g. dal, chicken, rice…" autocomplete="off">
+              <button id="clearSearch" class="fl-clear-btn" title="Clear">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <div id="flDropdown" class="fl-dropdown"></div>
+            </div>
+
+            <!-- Selected food panel -->
+            <div id="flSelected" class="fl-selected">
+              <div class="fl-selected-name"></div>
+
+              <div class="fl-nutrient-preview">
+                <div class="fl-nutrient">
+                  <div class="fl-nutrient-val val-cal" id="prevCal">—</div>
+                  <div class="fl-nutrient-key">kcal</div>
+                </div>
+                <div class="fl-nutrient">
+                  <div class="fl-nutrient-val val-pro" id="prevPro">—</div>
+                  <div class="fl-nutrient-key">Protein</div>
+                </div>
+                <div class="fl-nutrient">
+                  <div class="fl-nutrient-val val-carb" id="prevCarb">—</div>
+                  <div class="fl-nutrient-key">Carbs</div>
+                </div>
+                <div class="fl-nutrient">
+                  <div class="fl-nutrient-val val-fat" id="prevFat">—</div>
+                  <div class="fl-nutrient-key">Fats</div>
+                </div>
+              </div>
+
+              <div class="fl-qty-row">
+                <div class="fl-qty-ctrl">
+                  <button id="qtyMinus" type="button">&#8722;</button>
+                  <input type="number" id="qty" value="100" min="1" max="5000">
+                  <button id="qtyPlus" type="button">&#43;</button>
+                </div>
+                <span style="font-size:.82rem;color:var(--gray-500)">grams</span>
+              </div>
+
+              <div class="fl-quick-amounts" style="margin-bottom:.9rem">
+                {% for q in [50, 100, 150, 200, 250, 300] %}
+                <button class="fl-quick-btn" data-qty="{{ q }}">{{ q }}g</button>
+                {% endfor %}
+              </div>
+
+              <form method="POST" action="{{ url_for('user.food_log') }}">
+                <input type="hidden" name="entry_type" value="search">
+                <input type="hidden" name="food_id"    id="hiddenFoodId">
+                <input type="hidden" name="food_name"  id="hiddenFoodName">
+                <input type="hidden" name="quantity"   id="hiddenQty" value="100">
+                <button type="submit" class="btn btn-primary btn-fw">
+                  <i class="fa-solid fa-plus fa-xs"></i> Log This Food
+                </button>
+              </form>
+            </div>
+
+          </div><!-- /paneSearch -->
+
+          <!-- ── Manual entry pane ───────────────────────────── -->
+          <div id="paneManual" class="fl-pane">
+            <form method="POST" action="{{ url_for('user.food_log') }}" class="fl-manual-form">
+              <input type="hidden" name="entry_type" value="manual">
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Food Name <span style="color:var(--danger)">*</span></label>
+                  <input type="text" name="food_name" class="form-control" required placeholder="e.g. Homemade Khichdi" maxlength="120">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Quantity (g) <span style="color:var(--danger)">*</span></label>
+                  <input type="number" name="quantity" class="form-control" required min="1" max="5000" placeholder="100">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Calories (kcal) <span style="color:var(--danger)">*</span></label>
+                  <input type="number" name="calories" class="form-control" required min="0" step="0.1" placeholder="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Protein (g)</label>
+                  <input type="number" name="protein" class="form-control" min="0" step="0.1" placeholder="0">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Carbs (g)</label>
+                  <input type="number" name="carbs" class="form-control" min="0" step="0.1" placeholder="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fats (g)</label>
+                  <input type="number" name="fats" class="form-control" min="0" step="0.1" placeholder="0">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-plus fa-xs"></i> Log Manually
+              </button>
+            </form>
+          </div><!-- /paneManual -->
+
+          <!-- ── Browse all pane ─────────────────────────────── -->
+          <div id="paneBrowse" class="fl-pane">
+            <p style="font-size:.82rem;color:var(--gray-500);margin-bottom:.75rem">
+              Click <strong>Select</strong> to pick a food, then set quantity in the Search tab.
+            </p>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Food</th>
+                    <th>Cal/100g</th>
+                    <th>Protein</th>
+                    <th>Carbs</th>
+                    <th>Fats</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for f in all_foods %}
+                  <tr class="browse-row" data-food-id="{{ f.id }}">
+                    <td style="font-weight:500">{{ f.name }}</td>
+                    <td><span class="val-cal">{{ f.calories_per_100g }}</span></td>
+                    <td><span class="val-pro">{{ f.protein_per_100g }}g</span></td>
+                    <td><span class="val-carb">{{ f.carbs_per_100g }}g</span></td>
+                    <td><span class="val-fat">{{ f.fats_per_100g }}g</span></td>
+                    <td>
+                      <button class="btn-select"
+                        onclick="selectFood({{ f.id }},'{{ f.name }}',{{ f.calories_per_100g }},{{ f.protein_per_100g }},{{ f.carbs_per_100g }},{{ f.fats_per_100g }});switchTab('paneSearch', document.querySelector('.fl-tab[data-target=paneSearch]'))">
+                        Select
+                      </button>
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="6" class="text-center" style="color:var(--gray-400);padding:1.5rem">No foods found.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div><!-- /paneBrowse -->
+
+        </div>
+      </div>
+    </div><!-- /left -->
+
+    <!-- RIGHT: Today's log + recent -->
+    <div>
+
+      {% if recent_foods %}
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-clock-rotate-left"></i> Recently Logged</h3>
+        </div>
+        <div style="padding:.5rem 0">
+          {% for log in recent_foods %}
+          <div style="padding:.55rem 1.1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:.85rem;font-weight:600;color:var(--gray-700)">{{ log.food_name }}</span>
+            <span style="font-size:.78rem;color:var(--gray-400)">{{ log.calories|int }} kcal</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-utensils"></i> Today's Log
+            <span style="font-weight:400;color:var(--gray-400);margin-left:.3rem">({{ today_logs|length }})</span>
+          </h3>
+          <a href="{{ url_for('user.history') }}" class="btn btn-ghost btn-xs">History</a>
+        </div>
+
+        {% if today_logs %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Food</th><th>Cal</th><th>Time</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for log in today_logs %}
+              <tr>
+                <td>
+                  <div style="font-weight:500;font-size:.85rem">{{ log.food_name }}</div>
+                  <div style="font-size:.75rem;color:var(--gray-400)">{{ log.quantity }}g</div>
+                </td>
+                <td><span class="val-cal" style="font-size:.85rem">{{ log.calories|int }}</span></td>
+                <td style="color:var(--gray-400);font-size:.8rem">{{ log.created_at.strftime('%I:%M %p') }}</td>
+                <td>
+                  <form method="POST" action="{{ url_for('user.delete_log', log_id=log.id) }}"
+                        onsubmit="return confirm('Delete this entry?')">
+                    <button type="submit" class="btn btn-danger btn-xs btn-icon" title="Delete">
+                      <i class="fa-solid fa-trash fa-xs"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:1.75rem 1rem">
+          <div class="empty-state-icon"><i class="fa-solid fa-bowl-food"></i></div>
+          <p>Nothing logged today yet.</p>
+        </div>
+        {% endif %}
+      </div>
+
+    </div><!-- /right -->
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/food_log.js') }}"></script>
+{% endblock %}

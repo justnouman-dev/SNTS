@@ -1,0 +1,153 @@
+{% extends 'shared/base.html' %}
+{% block title %}Export Data{% endblock %}
+
+{% block content %}
+<div class="page-wrap" style="max-width:800px">
+
+  <div class="page-header">
+    <div class="page-header-back">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost btn-sm">
+        <i class="fa-solid fa-arrow-left fa-xs"></i> Dashboard
+      </a>
+      <div>
+        <h1 class="page-title">Export Data</h1>
+        <p class="page-subtitle">Download system data as CSV files</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Export cards grid ───────────────────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+
+    <!-- Foods export -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-body" style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.85rem">
+          <div style="width:48px;height:48px;border-radius:var(--radius);
+                      background:var(--green-light);display:flex;align-items:center;
+                      justify-content:center;flex-shrink:0">
+            <i class="fa-solid fa-bowl-food" style="color:var(--green);font-size:1.3rem"></i>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--gray-800)">Foods Database</div>
+            <div style="font-size:.82rem;color:var(--gray-500)">
+              <strong style="color:var(--green)">{{ total_foods }}</strong> records
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:.82rem;color:var(--gray-500);line-height:1.6">
+          Exports: id, name, calories, protein, carbs, fats (all per 100g)
+        </div>
+
+        <a href="{{ url_for('admin.export_foods') }}" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-download fa-xs"></i> Export Foods CSV
+        </a>
+      </div>
+    </div>
+
+    <!-- Food Logs export -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-body" style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.85rem">
+          <div style="width:48px;height:48px;border-radius:var(--radius);
+                      background:#fef3c7;display:flex;align-items:center;
+                      justify-content:center;flex-shrink:0">
+            <i class="fa-solid fa-clipboard-list" style="color:#d97706;font-size:1.3rem"></i>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--gray-800)">Food Logs</div>
+            <div style="font-size:.82rem;color:var(--gray-500)">
+              <strong style="color:#d97706">{{ total_logs }}</strong> records (all users)
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:.82rem;color:var(--gray-500);line-height:1.6">
+          Exports: log id, username, food name, quantity, macros, source, timestamp
+        </div>
+
+        <a href="{{ url_for('admin.export_food_logs') }}" class="btn btn-sm"
+           style="background:#d97706;color:#fff;border:none">
+          <i class="fa-solid fa-download fa-xs"></i> Export Food Logs CSV
+        </a>
+      </div>
+    </div>
+
+    <!-- Rewards export -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-body" style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.85rem">
+          <div style="width:48px;height:48px;border-radius:var(--radius);
+                      background:#faf5ff;display:flex;align-items:center;
+                      justify-content:center;flex-shrink:0">
+            <i class="fa-solid fa-trophy" style="color:#8b5cf6;font-size:1.3rem"></i>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--gray-800)">Rewards</div>
+            <div style="font-size:.82rem;color:var(--gray-500)">
+              <strong style="color:#8b5cf6">{{ total_rewards }}</strong> records
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:.82rem;color:var(--gray-500);line-height:1.6">
+          Exports: id, reward name, points required, active status
+        </div>
+
+        <a href="{{ url_for('admin.export_rewards') }}" class="btn btn-sm"
+           style="background:#8b5cf6;color:#fff;border:none">
+          <i class="fa-solid fa-download fa-xs"></i> Export Rewards CSV
+        </a>
+      </div>
+    </div>
+
+    <!-- Users export -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-body" style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.85rem">
+          <div style="width:48px;height:48px;border-radius:var(--radius);
+                      background:#eff6ff;display:flex;align-items:center;
+                      justify-content:center;flex-shrink:0">
+            <i class="fa-solid fa-users" style="color:#3b82f6;font-size:1.3rem"></i>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--gray-800)">Users</div>
+            <div style="font-size:.82rem;color:var(--gray-500)">
+              <strong style="color:#3b82f6">{{ total_users }}</strong> registered accounts
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:.82rem;color:var(--gray-500);line-height:1.6">
+          Exports: id, username, email, height, weight, age, BMI, diet plan, joined date
+        </div>
+
+        <a href="{{ url_for('admin.export_users') }}" class="btn btn-sm"
+           style="background:#3b82f6;color:#fff;border:none">
+          <i class="fa-solid fa-download fa-xs"></i> Export Users CSV
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Info card ───────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fa-solid fa-circle-info"></i> About Exports</h3>
+    </div>
+    <div class="card-body">
+      <ul style="font-size:.875rem;color:var(--gray-700);
+                 display:flex;flex-direction:column;gap:.5rem;padding-left:1.25rem">
+        <li>All files are downloaded instantly as <strong>.csv</strong> — no email required.</li>
+        <li>Filenames include a timestamp, e.g. <code style="background:var(--gray-100);padding:.1rem .4rem;border-radius:4px">snts_foods_20250426_103022.csv</code></li>
+        <li>CSV files can be opened in <strong>Excel, Google Sheets, LibreOffice Calc</strong> or any text editor.</li>
+        <li>The Foods export can be re-imported using the <a href="{{ url_for('admin.import_foods') }}">Import Foods</a> tool after removing the <code style="background:var(--gray-100);padding:.1rem .4rem;border-radius:4px">id</code> column.</li>
+        <li>Food Logs export includes <strong>all users</strong> — handle with care.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
