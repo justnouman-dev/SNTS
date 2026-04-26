@@ -1,0 +1,287 @@
+{% extends 'shared/base.html' %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+    <a href="{{ url_for('user.dashboard') }}" class="btn btn-ghost btn-sm">
+      <i class="fa-solid fa-arrow-left fa-xs"></i> Dashboard
+    </a>
+  </div>
+
+  <div class="profile-grid">
+
+    <!-- Left: info card -->
+    <div>
+      <div class="card">
+        <div class="profile-card-header">
+          <div class="profile-avatar">{{ current_user.username[0].upper() }}</div>
+          <div style="font-size:1.05rem;font-weight:700;color:var(--gray-800)">{{ current_user.username }}</div>
+          <div class="profile-meta">
+            <div>{{ current_user.email }}</div>
+            <div>{{ current_user.gender | title }} &middot; {{ current_user.age }} yrs</div>
+            <div>{{ current_user.activity_level | title }}</div>
+          </div>
+        </div>
+
+        <div class="card-body" style="padding-top:0">
+          <div class="profile-stat-row">
+            <div class="profile-stat">
+              <div class="profile-stat-val">{{ current_user.bmi }}</div>
+              <div class="profile-stat-key">BMI</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">
+                <span class="bmi-tag bmi-{{ current_user.get_bmi_category().lower() }}">
+                  {{ current_user.get_bmi_category() }}
+                </span>
+              </div>
+              <div class="profile-stat-key">Category</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">{{ current_user.get_calorie_target() }}</div>
+              <div class="profile-stat-key">Daily kcal</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">
+                <span class="badge badge-{{ current_user.diet_type }}">{{ current_user.diet_type | title }}</span>
+              </div>
+              <div class="profile-stat-key">Diet Plan</div>
+            </div>
+          </div>
+
+          <div class="profile-stat-row">
+            <div class="profile-stat">
+              <div class="profile-stat-val">{{ current_user.height }} cm</div>
+              <div class="profile-stat-key">Height</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">{{ current_user.weight }} kg</div>
+              <div class="profile-stat-key">Weight</div>
+            </div>
+          </div>
+
+          {% if stats %}
+          <div class="profile-stat-row">
+            <div class="profile-stat">
+              <div class="profile-stat-val" style="color:var(--green)">{{ stats.points }}</div>
+              <div class="profile-stat-key">Points</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">{{ stats.streak }}</div>
+              <div class="profile-stat-key">Streak (days)</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ── Data Portability card ───────────────────────────── -->
+      <div class="card portability-card" id="import-section" style="margin-top:1.25rem">
+        <div class="card-header portability-card-header">
+          <h3><i class="fa-solid fa-box-archive"></i> My Data</h3>
+          <span class="portability-badge">Portability</span>
+        </div>
+        <div class="card-body">
+
+          <!-- Export -->
+          <div class="portability-block">
+            <div class="portability-icon export-icon">
+              <i class="fa-solid fa-file-export"></i>
+            </div>
+            <div class="portability-text">
+              <div class="portability-title">Export My Data</div>
+              <div class="portability-desc">
+                Download your profile, food logs, points &amp; streak as a JSON file.
+                Use it as a backup or to move to another account.
+              </div>
+            </div>
+            <a href="{{ url_for('user.export_data') }}"
+               class="btn btn-export">
+              <i class="fa-solid fa-download fa-xs"></i> Export
+            </a>
+          </div>
+
+          <div class="portability-divider"></div>
+
+          <!-- Import -->
+          <div class="portability-block">
+            <div class="portability-icon import-icon">
+              <i class="fa-solid fa-file-import"></i>
+            </div>
+            <div class="portability-text">
+              <div class="portability-title">Import My Data</div>
+              <div class="portability-desc">
+                Upload a previously exported SNTS JSON file. Food logs will be
+                appended; profile &amp; stats will be updated.
+              </div>
+            </div>
+            <button type="button" class="btn btn-import" id="importToggleBtn"
+                    onclick="document.getElementById('importForm').classList.toggle('hidden')">
+              <i class="fa-solid fa-upload fa-xs"></i> Import
+            </button>
+          </div>
+
+          <!-- Hidden import form -->
+          <div id="importForm" class="hidden import-form-wrap">
+            <form method="POST" action="{{ url_for('user.import_data') }}"
+                  enctype="multipart/form-data" id="importFormEl">
+              <label class="import-file-label" id="importFileLabel">
+                <i class="fa-solid fa-folder-open"></i>
+                <span id="importFileName">Choose a .json file&hellip;</span>
+                <input type="file" name="json_file" accept=".json"
+                       id="importFileInput" style="display:none"
+                       onchange="updateFileName(this)">
+              </label>
+              <div class="import-actions">
+                <button type="submit" class="btn btn-primary btn-sm" id="importSubmitBtn" disabled>
+                  <i class="fa-solid fa-check fa-xs"></i> Restore Data
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('importForm').classList.add('hidden')">
+                  Cancel
+                </button>
+              </div>
+              <div class="import-hint">
+                <i class="fa-solid fa-circle-info fa-xs"></i>
+                Only files exported from SNTS are accepted. Your existing logs
+                will not be deleted — imported logs are added on top.
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+      <!-- ── /Data Portability ──────────────────────────────── -->
+
+    </div>
+
+    <!-- Right: update form -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-pen-to-square"></i> Update Profile</h3>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('user.profile') }}">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Height (cm)</label>
+                <input type="number" name="height" class="form-control" required
+                       min="50" max="300" step="0.1"
+                       value="{{ current_user.height }}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Weight (kg)</label>
+                <input type="number" name="weight" class="form-control" required
+                       min="10" max="500" step="0.1"
+                       value="{{ current_user.weight }}">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Age</label>
+              <input type="number" name="age" class="form-control" required
+                     min="5" max="120" value="{{ current_user.age }}">
+            </div>
+
+            <!-- Live BMI preview -->
+            <div id="bmiPreview" style="display:none;background:var(--gray-50);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:.75rem;font-size:.88rem">
+              BMI: <strong id="bmiVal">—</strong>
+              <span id="bmiCat" style="margin-left:.5rem;font-weight:600"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Activity Level</label>
+              <select name="activity_level" class="form-control">
+                {% for lvl in ['sedentary', 'moderate', 'active'] %}
+                <option value="{{ lvl }}" {% if current_user.activity_level == lvl %}selected{% endif %}>
+                  {{ lvl | title }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Diet Plan</label>
+              <select name="diet_type" class="form-control">
+                {% for dt in ['bulking', 'maintenance', 'cutting'] %}
+                <option value="{{ dt }}" {% if current_user.diet_type == dt %}selected{% endif %}>
+                  {{ dt | title }}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="form-hint">Bulking = +300 kcal &middot; Cutting = −300 kcal &middot; Maintenance = TDEE</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-floppy-disk fa-xs"></i> Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── BMI preview ────────────────────────────────────────────── */
+(function() {
+  const hInp = document.querySelector('input[name=height]');
+  const wInp = document.querySelector('input[name=weight]');
+  const prev = document.getElementById('bmiPreview');
+  const bmiV = document.getElementById('bmiVal');
+  const bmiC = document.getElementById('bmiCat');
+
+  function calcBMI() {
+    const h = parseFloat(hInp.value);
+    const w = parseFloat(wInp.value);
+    if (!h || !w || h < 50) { prev.style.display='none'; return; }
+    const bmi  = (w / ((h/100)**2)).toFixed(1);
+    let cat = '', color = '';
+    if      (bmi < 18.5) { cat = 'Underweight'; color = '#1e40af'; }
+    else if (bmi < 25)   { cat = 'Normal';       color = '#166534'; }
+    else if (bmi < 30)   { cat = 'Overweight';   color = '#92400e'; }
+    else                  { cat = 'Obese';        color = '#991b1b'; }
+    bmiV.textContent = bmi;
+    bmiC.textContent = cat;
+    bmiC.style.color = color;
+    prev.style.display = 'block';
+  }
+
+  [hInp, wInp].forEach(el => el && el.addEventListener('input', calcBMI));
+  calcBMI();
+})();
+
+/* ── Import file picker ─────────────────────────────────────── */
+function updateFileName(input) {
+  const label  = document.getElementById('importFileName');
+  const submit = document.getElementById('importSubmitBtn');
+  const label2 = document.getElementById('importFileLabel');
+  if (input.files && input.files[0]) {
+    const name = input.files[0].name;
+    label.textContent  = name;
+    label2.classList.add('file-chosen');
+    submit.disabled = false;
+  } else {
+    label.textContent  = 'Choose a .json file\u2026';
+    label2.classList.remove('file-chosen');
+    submit.disabled = true;
+  }
+}
+
+/* ── Open import panel if page loaded with #import-section ──── */
+(function() {
+  if (window.location.hash === '#import-section') {
+    const form = document.getElementById('importForm');
+    if (form) form.classList.remove('hidden');
+    const el = document.getElementById('import-section');
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'shared/base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Admin Dashboard</h1>
+      <p class="page-subtitle">SNTS system overview</p>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="admin-stats">
+
+    <div class="stat-card">
+      <div class="stat-card-label">Total Users</div>
+      <div class="stat-card-value">{{ total_users }}</div>
+      <div class="stat-card-sub">registered accounts</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-label">Food Logs</div>
+      <div class="stat-card-value">{{ total_logs }}</div>
+      <div class="stat-card-sub">Today: <strong>{{ today_logs }}</strong></div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-label">Foods in DB</div>
+      <div class="stat-card-value">{{ total_foods }}</div>
+      <div class="stat-card-sub">searchable items</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-label">Active Rewards</div>
+      <div class="stat-card-value">{{ total_rewards }}</div>
+      <div class="stat-card-sub">available to users</div>
+    </div>
+
+  </div>
+
+  <!-- Quick actions -->
+  <div class="quick-grid" style="grid-template-columns:repeat(3,1fr) repeat(3,1fr);grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+    <a href="{{ url_for('admin.users') }}" class="quick-btn">
+      <i class="fa-solid fa-users"></i> Manage Users
+    </a>
+    <a href="{{ url_for('admin.foods') }}" class="quick-btn">
+      <i class="fa-solid fa-bowl-food"></i> Browse Foods
+    </a>
+    <a href="{{ url_for('admin.add_food') }}" class="quick-btn">
+      <i class="fa-solid fa-circle-plus"></i> Add Food
+    </a>
+    <a href="{{ url_for('admin.import_foods') }}" class="quick-btn">
+      <i class="fa-solid fa-file-arrow-up"></i> Import CSV
+    </a>
+    <a href="{{ url_for('admin.exports') }}" class="quick-btn">
+      <i class="fa-solid fa-file-arrow-down"></i> Export Data
+    </a>
+    <a href="{{ url_for('admin.add_reward') }}" class="quick-btn">
+      <i class="fa-solid fa-trophy"></i> Add Reward
+    </a>
+  </div>
+
+  <!-- Recent users -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fa-solid fa-user-clock"></i> Recent Registrations</h3>
+      <a href="{{ url_for('admin.users') }}" class="btn btn-ghost btn-xs">View all</a>
+    </div>
+
+    {% if recent_users %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>BMI</th>
+            <th>Diet Plan</th>
+            <th>Activity</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in recent_users %}
+          <tr>
+            <td style="color:var(--gray-400)">{{ u.id }}</td>
+            <td style="font-weight:600">{{ u.username }}</td>
+            <td style="color:var(--gray-500);font-size:.85rem">{{ u.email }}</td>
+            <td>
+              {{ u.bmi }}
+              <span class="bmi-tag bmi-{{ u.get_bmi_category().lower() }}">{{ u.get_bmi_category() }}</span>
+            </td>
+            <td><span class="badge badge-{{ u.diet_type }}">{{ u.diet_type | title }}</span></td>
+            <td style="color:var(--gray-600);font-size:.85rem">{{ u.activity_level | title }}</td>
+            <td style="color:var(--gray-400);font-size:.82rem">{{ u.created_at.strftime('%d %b %Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fa-solid fa-users"></i></div>
+      <p>No users registered yet.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
