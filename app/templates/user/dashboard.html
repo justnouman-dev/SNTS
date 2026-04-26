@@ -1,0 +1,241 @@
+{% extends 'shared/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">
+        {{ current_user.username }}
+        &middot; <span class="badge badge-{{ current_user.diet_type }}">{{ current_user.diet_type | title }}</span>
+        &middot; BMI <span class="bmi-tag bmi-{{ bmi_category.lower() }}">{{ current_user.bmi }}</span>
+      </p>
+    </div>
+    <a href="{{ url_for('user.food_log') }}" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-plus fa-xs"></i> Log Food
+    </a>
+  </div>
+
+  <!-- Top stat cards -->
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-card-label">Calories Today</div>
+      <div class="stat-card-value">{{ calories_today | int }}<small> kcal</small></div>
+      <div class="stat-card-sub">Target: {{ calorie_target }} kcal</div>
+      <div class="stat-card-progress">
+        <div class="progress"><div class="progress-bar progress-bar-green" style="width:{{ cal_percent }}%"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-label">Protein Today</div>
+      <div class="stat-card-value" style="color:var(--pro-color)">{{ protein_today }}<small>g</small></div>
+      <div class="stat-card-sub">Target: {{ protein_target }}g</div>
+      <div class="stat-card-progress">
+        <div class="progress"><div class="progress-bar progress-bar-blue" style="width:{{ protein_pct }}%"></div></div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-label">Streak</div>
+      <div class="stat-card-value">{{ stats.streak }}<small> days</small></div>
+      <div class="stat-card-sub">{{ stats.points }} total points</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-label">Water Intake</div>
+      <div class="stat-card-value">{{ water_glasses }}<small>/8</small></div>
+      <div class="stat-card-sub">glasses today</div>
+      <div class="water-ctrl">
+        <form method="POST" action="{{ url_for('user.update_water') }}" style="margin:0">
+          <input type="hidden" name="glasses" value="{{ [water_glasses-1,0]|max }}">
+          <button type="submit" class="water-btn">&#8722;</button>
+        </form>
+        <div class="water-dots-mini">
+          {% for i in range(1,9) %}
+          <span class="water-dot-mini {% if i <= water_glasses %}filled{% endif %}"></span>
+          {% endfor %}
+        </div>
+        <form method="POST" action="{{ url_for('user.update_water') }}" style="margin:0">
+          <input type="hidden" name="glasses" value="{{ [water_glasses+1,20]|min }}">
+          <button type="submit" class="water-btn water-btn-add">&#43;</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="dash-grid">
+
+    <!-- LEFT -->
+    <div>
+
+      <!-- Macro progress -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-chart-simple"></i> Today's Macros</h3>
+          <span style="font-size:.75rem;color:var(--gray-400)">vs daily target</span>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:.85rem">
+          {% set macros = [
+            ('Calories', calories_today|int, calorie_target, cal_percent,  'green',  'kcal'),
+            ('Protein',  protein_today,      protein_target,  protein_pct, 'blue',   'g'),
+            ('Carbs',    carbs_today,        carbs_target,    carbs_pct,   'orange', 'g'),
+            ('Fats',     fats_today,         fats_target,     fats_pct,    'purple', 'g'),
+          ] %}
+          {% for label, val, tgt, pct, color, unit in macros %}
+          <div>
+            <div class="progress-label">
+              <strong>{{ label }}</strong>
+              <span>{{ val }}{{ unit }} / {{ tgt }}{{ unit }}</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar progress-bar-{{ color }}" style="width:{{ pct }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-chart-bar"></i> Nutrition Charts</h3>
+          <select id="chartPeriod" onchange="loadCharts(this.value)" class="dash-select">
+            <option value="daily">Last 7 days</option>
+            <option value="weekly">This week</option>
+            <option value="monthly">This month</option>
+          </select>
+        </div>
+        <div class="card-body charts-row">
+          <div class="chart-col">
+            <p class="chart-label">Calorie History</p>
+            <canvas id="barChart"></canvas>
+          </div>
+          <div class="chart-col">
+            <p class="chart-label">Macro Split</p>
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's log -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-list-ul"></i> Today's Log
+            <span style="font-weight:400;color:var(--gray-400);margin-left:.35rem">({{ today_logs|length }})</span>
+          </h3>
+          <a href="{{ url_for('user.food_log') }}" class="btn btn-secondary btn-sm">Add food</a>
+        </div>
+        {% if today_logs %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Food</th><th>Qty</th><th>Cal</th><th>Protein</th><th>Carbs</th><th>Fats</th><th>Time</th></tr>
+            </thead>
+            <tbody>
+              {% for log in today_logs %}
+              <tr>
+                <td>
+                  <span style="font-weight:500">{{ log.food_name }}</span>
+                  <span class="type-tag {% if log.food_id %}type-db{% else %}type-manual{% endif %}" style="margin-left:.35rem">
+                    {{ 'DB' if log.food_id else 'Manual' }}
+                  </span>
+                </td>
+                <td style="color:var(--gray-500)">{{ log.quantity }}g</td>
+                <td>{{ log.calories | int }}</td>
+                <td><span class="val-pro">{{ log.protein }}g</span></td>
+                <td><span class="val-carb">{{ log.carbs }}g</span></td>
+                <td><span class="val-fat">{{ log.fats }}g</span></td>
+                <td style="color:var(--gray-400)">{{ log.created_at.strftime('%I:%M %p') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2">Total</td>
+                <td>{{ calories_today | int }}</td>
+                <td><span class="val-pro">{{ protein_today }}g</span></td>
+                <td><span class="val-carb">{{ carbs_today }}g</span></td>
+                <td><span class="val-fat">{{ fats_today }}g</span></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon"><i class="fa-solid fa-utensils"></i></div>
+          <p>No food logged today. Start by adding a meal.</p>
+          <a href="{{ url_for('user.food_log') }}" class="btn btn-primary btn-sm" style="margin-top:.5rem">Log your first meal</a>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+
+      <!-- Weekly summary -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-calendar-week"></i> This Week</h3>
+          <span style="font-size:.75rem;color:var(--gray-400)">Last 7 days</span>
+        </div>
+        <div class="card-body week-summary">
+          <div class="ws-row"><span class="ws-key">Total calories</span><span class="ws-val">{{ week_calories | int }} kcal</span></div>
+          <div class="ws-row"><span class="ws-key">Total protein</span><span class="ws-val" style="color:var(--pro-color)">{{ week_protein }}g</span></div>
+          <div class="ws-row"><span class="ws-key">Food entries</span><span class="ws-val">{{ week_log_count }}</span></div>
+          <div class="ws-row"><span class="ws-key">Current streak</span><span class="ws-val">{{ stats.streak }} days</span></div>
+          <div class="ws-row" style="border:none"><span class="ws-key">Points balance</span><span class="ws-val" style="color:var(--green)">{{ stats.points }}</span></div>
+        </div>
+      </div>
+
+      <!-- Food suggestions -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-lightbulb"></i> Suggestions</h3>
+          <span style="font-size:.75rem;color:var(--gray-400)">
+            {{ [calorie_target - calories_today, 0]|max | round | int }} kcal left
+          </span>
+        </div>
+        {% if suggestions %}
+        <div class="suggest-list">
+          {% for food in suggestions %}
+          <div class="suggest-item">
+            <div class="suggest-name">{{ food.name }}</div>
+            <div class="suggest-macros">
+              <span class="val-cal">{{ food.calories_per_100g }} kcal</span>
+              <span class="val-pro">P {{ food.protein_per_100g }}g</span>
+              <span class="val-carb">C {{ food.carbs_per_100g }}g</span>
+              <span class="val-fat">F {{ food.fats_per_100g }}g</span>
+            </div>
+            <div style="font-size:.72rem;color:var(--gray-400)">per 100g</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:1.5rem">
+          <div class="empty-state-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <p>Calorie goal reached for today.</p>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', () => loadCharts('daily'));</script>
+{% endblock %}
