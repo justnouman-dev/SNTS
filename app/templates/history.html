@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}History - SNTS{% endblock %}
+{% block content %}
+<div class="container" style="padding: 2rem 20px;">
+    <h1 class="mb-3">History & Analytics 📊</h1>
+    
+    <div class="card">
+        <h2 class="card-title">Nutrition Trends (Last 7 Days)</h2>
+        <div id="trend-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; text-align: center;">
+            <div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);" id="avg-calories">0</div>
+                <div style="color: var(--text-light);">Avg Calories</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);" id="avg-protein">0g</div>
+                <div style="color: var(--text-light);">Avg Protein</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);" id="avg-carbs">0g</div>
+                <div style="color: var(--text-light);">Avg Carbs</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);" id="avg-fats">0g</div>
+                <div style="color: var(--text-light);">Avg Fats</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">Food History</h2>
+        <div style="overflow-x: auto;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Food</th>
+                        <th>Quantity</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
+                        <th>Carbs</th>
+                        <th>Fats</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table">
+                    <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadTrends() {
+    try {
+        const response = await fetch('/api/nutrition-trends?days=7');
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('avg-calories').textContent = data.averages.calories;
+            document.getElementById('avg-protein').textContent = data.averages.protein + 'g';
+            document.getElementById('avg-carbs').textContent = data.averages.carbs + 'g';
+            document.getElementById('avg-fats').textContent = data.averages.fats + 'g';
+        }
+    } catch (error) {
+        console.error('Failed to load trends:', error);
+    }
+}
+
+async function loadHistory() {
+    try {
+        const response = await fetch('/api/food-history?per_page=50');
+        const data = await response.json();
+        if (data.success) {
+            const tbody = document.getElementById('history-table');
+            if (data.logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No history yet</td></tr>';
+            } else {
+                tbody.innerHTML = data.logs.map(log => `
+                    <tr>
+                        <td>${log.date}</td>
+                        <td>${log.time}</td>
+                        <td><strong>${log.food_name}</strong></td>
+                        <td>${log.quantity}g</td>
+                        <td>${Math.round(log.total_calories)}</td>
+                        <td>${Math.round(log.total_protein)}g</td>
+                        <td>${Math.round(log.total_carbs)}g</td>
+                        <td>${Math.round(log.total_fats)}g</td>
+                    </tr>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load history:', error);
+    }
+}
+
+loadTrends();
+loadHistory();
+</script>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Register - SNTS{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem 0;">
+    <div class="container">
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <h2 class="text-center mb-3">Register for SNTS</h2>
+            
+            <div id="alert-container"></div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-input" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" required autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-input" required minlength="6" autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Height (cm)</label>
+                    <input type="number" name="height" class="form-input" required min="100" max="250" step="0.1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Weight (kg)</label>
+                    <input type="number" name="weight" class="form-input" required min="30" max="200" step="0.1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Age</label>
+                    <input type="number" name="age" class="form-input" required min="10" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Gender</label>
+                    <select name="gender" class="form-select" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Register</button>
+            </form>
+
+            <p class="text-center mt-3">
+                Already have an account? <a href="{{ url_for('auth.login') }}" style="color: var(--primary-color); font-weight: 500;">Login here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        height: formData.get('height'),
+        weight: formData.get('weight'),
+        age: formData.get('age'),
+        gender: formData.get('gender')
+    };
+
+    // Validate password length
+    if (data.password.length < 6) {
+        showAlert('Password must be at least 6 characters long', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showAlert('Registration successful! Your BMI: ' + result.health_data.bmi + ', Suggested Diet: ' + result.health_data.suggested_diet, 'success');
+            setTimeout(() => {
+                window.location.href = result.redirect;
+            }, 2000);
+        } else {
+            showAlert(result.message, 'error');
+        }
+    } catch (error) {
+        showAlert('Registration failed. Please try again.', 'error');
+    }
+});
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
+    alertDiv.textContent = message;
+    
+    const container = document.getElementById('alert-container');
+    container.innerHTML = '';
+    container.appendChild(alertDiv);
+}
+</script>
+{% endblock %}

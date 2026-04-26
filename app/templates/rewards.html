@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Rewards - SNTS{% endblock %}
+{% block content %}
+<div class="container" style="padding: 2rem 20px;">
+    <h1 class="mb-3">Rewards & Achievements 🏆</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="total-points">0</div>
+            <div class="stat-label">Total Points</div>
+        </div>
+        <div class="stat-card secondary">
+            <div class="stat-value"><span id="current-streak">0</span> 🔥</div>
+            <div class="stat-label">Current Streak</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-value"><span id="longest-streak">0</span> ⭐</div>
+            <div class="stat-label">Longest Streak</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">How to Earn Points</h2>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <strong>Log Food:</strong> 10 points per entry
+            </li>
+            <li style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <strong>Daily Streak:</strong> Keep logging every day
+            </li>
+            <li style="padding: 0.75rem;">
+                <strong>Hydration Goal:</strong> 50 bonus points when target reached
+            </li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">Your Badges 🏅</h2>
+        <div id="badges-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <p style="color: var(--text-light);">No badges earned yet. Keep logging!</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">Available Rewards</h2>
+        <div id="rewards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <p style="color: var(--text-light);">Keep earning points to unlock rewards!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadRewardData() {
+    try {
+        const response = await fetch('/api/reward-data');
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('total-points').textContent = data.points;
+            document.getElementById('current-streak').textContent = data.current_streak;
+            document.getElementById('longest-streak').textContent = data.longest_streak;
+            
+            const badgesContainer = document.getElementById('badges-container');
+            if (data.badges.length > 0) {
+                badgesContainer.innerHTML = data.badges.map(badge => 
+                    `<span class="badge badge-success">${badge}</span>`
+                ).join('');
+            }
+            
+            const rewardsContainer = document.getElementById('rewards-container');
+            if (data.available_rewards.length > 0) {
+                rewardsContainer.innerHTML = data.available_rewards.map(reward => `
+                    <div class="card" style="text-align: center; padding: 1.5rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">${reward.icon}</div>
+                        <h3 style="margin-bottom: 0.5rem;">${reward.name}</h3>
+                        <p style="color: var(--text-light); margin-bottom: 1rem;">${reward.cost} points</p>
+                        <button class="btn ${data.points >= reward.cost ? 'btn-primary' : 'btn-outline'}" ${data.points < reward.cost ? 'disabled' : ''}>
+                            ${data.points >= reward.cost ? 'Redeem' : 'Locked'}
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load reward data:', error);
+    }
+}
+
+loadRewardData();
+</script>
+{% endblock %}

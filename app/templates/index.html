@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - SNTS{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <h1 style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;">
+                🥗 Smart Nutrient Tracking System
+            </h1>
+            <p style="font-size: 1.2rem; color: var(--text-light); margin-bottom: 2rem;">
+                Track your nutrition, achieve your health goals, and stay motivated with gamification!
+            </p>
+            
+            <div class="features" style="text-align: left; margin: 2rem 0;">
+                <h3 style="margin-bottom: 1rem;">Features:</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 0.5rem 0;">✅ AI-Based Health Suggestions</li>
+                    <li style="padding: 0.5rem 0;">✅ Smart Food Logging with 100+ Foods</li>
+                    <li style="padding: 0.5rem 0;">✅ Hydration Tracking & Reminders</li>
+                    <li style="padding: 0.5rem 0;">✅ Points, Streaks & Badges</li>
+                    <li style="padding: 0.5rem 0;">✅ Complete History & Analytics</li>
+                    <li style="padding: 0.5rem 0;">✅ Works 100% Offline</li>
+                </ul>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="flex: 1; max-width: 200px;">
+                    Login
+                </a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-secondary" style="flex: 1; max-width: 200px;">
+                    Register
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
